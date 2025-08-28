@@ -19,12 +19,12 @@ impl Identity {
         }
     }
 
-    pub fn commitment(&self) -> String {
+    pub fn commitment(&self) -> String {        // commitment = hash(trapdoor + nullifier), this is a merkle leaf in the identity tree
         let mut hasher = Sha256::new();
         hasher.update(self.trapdoor.to_le_bytes());
         hasher.update(self.nullifier.to_le_bytes());
-        let result = hasher.finalize();
-        hex::encode(result)
+        let result = hasher.finalize();     // 32 byte final hash
+        hex::encode(result)     // composed of trapdoor + nullifier
     }
 
     pub fn save_to_file(&self, path: PathBuf) {
