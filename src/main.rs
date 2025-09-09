@@ -25,9 +25,9 @@ enum Commands {
     },
     Vote {
         #[arg(short, long)]
-        proposal_id: u32,
+        proposal_id: String,
         #[arg(short, long)]
-        choice: u8,
+        choice: String,
     },
     Tally {
         #[arg(short, long)]
