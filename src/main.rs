@@ -17,7 +17,7 @@ enum Commands {
     RegisterIdentity,
     RegisterProposal {
         #[arg(short, long)]
-        slug: String,
+        proposal_id: String,
     },
     Create {
         #[arg(short, long)]
@@ -41,7 +41,7 @@ async fn main() {
 
     match cli.command {
         Commands::RegisterIdentity => commands::register::handle_register_identity().await,
-        Commands::RegisterProposal { slug } => commands::register::handle_register_to_proposal(&slug).await,
+        Commands::RegisterProposal { proposal_id } => commands::register::handle_register_to_proposal(&proposal_id).await,
         Commands::Create { question } => commands::create::handle_create(question).await,
         Commands::Vote { proposal_id, choice } => commands::vote::handle_vote(proposal_id, choice).await,
         Commands::Tally { proposal_id } => commands::tally::handle_tally(proposal_id).await,
