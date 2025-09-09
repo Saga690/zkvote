@@ -2,6 +2,7 @@ use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{fs, path::PathBuf};
+use rand::RngCore;
 
 #[derive(Serialize, Deserialize)]
 struct Identity {
@@ -11,24 +12,12 @@ struct Identity {
 
 #[derive(Serialize, Deserialize)]
 struct Proposal {
+    id: String,
     question: String,
     options: Vec<String>,
     identity_commitments: Vec<String>,
     created_at: String,
     voters: Vec<String>,
-}
-
-fn slugify(s: &str) -> String {         //converting input string to a slug
-    let mut slug = s
-        .to_lowercase()
-        .chars()
-        .map(|c| if c.is_alphanumeric() { c } else { '-' })
-        .collect::<String>();
-    // collapse multiple '-' and trim
-    while slug.contains("--") {
-        slug = slug.replace("--", "-");
-    }
-    slug.trim_matches('-').to_string()
 }
 
 fn load_identity(path: PathBuf) -> anyhow::Result<Identity> {
@@ -45,6 +34,12 @@ fn commitment_of(id: &Identity) -> String {
     hex::encode(result)
 }
 
+fn generate_hex_id() -> String {
+    let mut bytes = [0u8; 8]; // 8 bytes = 16 hex chars
+    rand::thread_rng().fill_bytes(&mut bytes);
+    hex::encode(bytes)
+}
+
 pub async fn handle_create(question: String) {
     // 1) load local identity
     let id_path = PathBuf::from("identity.json");
@@ -56,11 +51,13 @@ pub async fn handle_create(question: String) {
         }
     };
 
-    // 2) compute commitment
+    // 2) compute commitment and hex id
     let me = commitment_of(&identity);
+    let hex_id = generate_hex_id();
 
     // 3) build proposal object
     let proposal = Proposal {
+        id: hex_id.clone(),
         question: question.clone(),
         options: vec!["yes".to_string(), "no".to_string()],
         identity_commitments: vec![me],
@@ -69,8 +66,7 @@ pub async fn handle_create(question: String) {
     };
 
     // 4) write proposals/<slug>.json
-    let slug = slugify(&question);
-    let out_path = PathBuf::from("proposals").join(format!("{slug}.json"));
+    let out_path = PathBuf::from("proposals").join(format!("{hex_id}.json"));
 
     if let Err(e) = fs::write(&out_path, serde_json::to_string_pretty(&proposal).unwrap()) {
         eprintln!("Failed to write proposal file: {e}");
