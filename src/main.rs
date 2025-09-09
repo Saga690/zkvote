@@ -14,7 +14,11 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    Register,
+    RegisterIdentity,
+    RegisterProposal {
+        #[arg(short, long)]
+        slug: String,
+    },
     Create {
         #[arg(short, long)]
         question: String,
@@ -36,7 +40,8 @@ async fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Register => commands::register::handle_register().await,
+        Commands::RegisterIdentity => commands::register::handle_register_identity().await,
+        Commands::RegisterProposal { slug } => commands::register::handle_register_to_proposal(&slug).await,
         Commands::Create { question } => commands::create::handle_create(question).await,
         Commands::Vote { proposal_id, choice } => commands::vote::handle_vote(proposal_id, choice).await,
         Commands::Tally { proposal_id } => commands::tally::handle_tally(proposal_id).await,

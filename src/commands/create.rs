@@ -11,10 +11,11 @@ struct Identity {
 
 #[derive(Serialize, Deserialize)]
 struct Proposal {
-    title: String,
+    question: String,
     options: Vec<String>,
     identity_commitments: Vec<String>,
     created_at: String,
+    voters: Vec<String>,
 }
 
 fn slugify(s: &str) -> String {         //converting input string to a slug
@@ -60,10 +61,11 @@ pub async fn handle_create(question: String) {
 
     // 3) build proposal object
     let proposal = Proposal {
-        title: question.clone(),
+        question: question.clone(),
         options: vec!["yes".to_string(), "no".to_string()],
         identity_commitments: vec![me],
         created_at: Utc::now().to_rfc3339(),
+        voters: vec![],
     };
 
     // 4) write proposals/<slug>.json
