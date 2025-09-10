@@ -31,7 +31,7 @@ enum Commands {
     },
     Tally {
         #[arg(short, long)]
-        proposal_id: u32,
+        proposal_id: String,
     },
 }
 
